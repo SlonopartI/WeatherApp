@@ -77,11 +77,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
-            forecasts= (String[]) msg.getData().get("forecasts");
-            adapter.setForecasts(forecasts);
-            view.setAdapter(adapter);
-            view.setLayoutManager(new LinearLayoutManager(adapter.getActivity()));
-            thread=null;
+            if(msg.arg1==0){
+                forecasts= (String[]) msg.getData().get("forecasts");
+                adapter.setForecasts(forecasts);
+                view.setAdapter(adapter);
+                view.setLayoutManager(new LinearLayoutManager(adapter.getActivity()));
+                thread=null;
+            }
+            else{
+                Toast.makeText(adapter.getActivity(), "Не удалось найти прогноз погоды",Toast.LENGTH_SHORT).show();
+            }
         }
 
         public void setView(RecyclerView view) {

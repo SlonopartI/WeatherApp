@@ -40,55 +40,58 @@ public class ParserThread extends Thread {
                 line = line.replaceAll(",", "\n");
                 array.set(new AtomicReferenceArray<>(line.split("\n")));
                 reader.close();
-            }
-            connection.disconnect();
-
-            if(array.get().get(0)!=null) {
-                int daysCount = 0;
-                for (int i = 0; i < array.get().length(); i++) {
-                    if (daysCount == length/4) break;
-                    if (array.get().get(i).equals("\"forecastday\":[")) {
-                        int dateindex = 0;
-                        for (int j = i; j < array.get().length(); j++) {
-                            if (daysCount == length/4) break;
-                            if (array.get().get(j).startsWith("\"date\":")) {
-                                forecasts[dateindex] = array.get().get(j).replace("\"date\":", "");
-                                dateindex += 4;
-                            }
-                            if (array.get().get(j).startsWith("\"day\":")) {
-                                int count = 0;
-                                for (; j < array.get().length(); j++) {
-                                    if (count == 3) {
-                                        daysCount++;
-                                        break;
-                                    }
-                                    if (array.get().get(j).startsWith("\"maxtemp_c\":")) {
-                                        forecasts[dateindex - 3] = array.get().get(j).replace("\"maxtemp_c\":", "");
-                                        count++;
-                                    }
-                                    if (array.get().get(j).startsWith("\"mintemp_c\":")) {
-                                        forecasts[dateindex - 2] = array.get().get(j).replace("\"mintemp_c\":", "");
-                                        count++;
-                                    }
-                                    if (array.get().get(j).startsWith("\"icon\":")) {
-                                        forecasts[dateindex - 1] = array.get().get(j)
-                                                .replace("\"icon\":\"//cdn.weatherapi.com/weather/64x64/", "")
-                                                .replace("\"", "");
-                                        count++;
+                if (array.get().get(0) != null) {
+                    int daysCount = 0;
+                    for (int i = 0; i < array.get().length(); i++) {
+                        if (daysCount == length / 4) break;
+                        if (array.get().get(i).equals("\"forecastday\":[")) {
+                            int dateindex = 0;
+                            for (int j = i; j < array.get().length(); j++) {
+                                if (daysCount == length / 4) break;
+                                if (array.get().get(j).startsWith("\"date\":")) {
+                                    forecasts[dateindex] = array.get().get(j).replace("\"date\":", "");
+                                    dateindex += 4;
+                                }
+                                if (array.get().get(j).startsWith("\"day\":")) {
+                                    int count = 0;
+                                    for (; j < array.get().length(); j++) {
+                                        if (count == 3) {
+                                            daysCount++;
+                                            break;
+                                        }
+                                        if (array.get().get(j).startsWith("\"maxtemp_c\":")) {
+                                            forecasts[dateindex - 3] = array.get().get(j).replace("\"maxtemp_c\":", "");
+                                            count++;
+                                        }
+                                        if (array.get().get(j).startsWith("\"mintemp_c\":")) {
+                                            forecasts[dateindex - 2] = array.get().get(j).replace("\"mintemp_c\":", "");
+                                            count++;
+                                        }
+                                        if (array.get().get(j).startsWith("\"icon\":")) {
+                                            forecasts[dateindex - 1] = array.get().get(j)
+                                                    .replace("\"icon\":\"//cdn.weatherapi.com/weather/64x64/", "")
+                                                    .replace("\"", "");
+                                            count++;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+                Bundle bundle=new Bundle();
+                bundle.putStringArray("forecasts",forecasts);
+                Message msg=MainActivity.handler.obtainMessage();
+                msg.setData(bundle);
+                MainActivity.handler.sendMessage(msg);
+            }
+            else{
+                Message msg=MainActivity.handler.obtainMessage();
+                msg.arg1=-1;
+                MainActivity.handler.sendMessage(msg);
             }
         } catch (Exception e){
             e.printStackTrace();
         }
-        Bundle bundle=new Bundle();
-        bundle.putStringArray("forecasts",forecasts);
-        Message msg=MainActivity.handler.obtainMessage();
-        msg.setData(bundle);
-        MainActivity.handler.sendMessage(msg);
     }
 }
