@@ -30,27 +30,47 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if(position>= forecasts.length/4)return;
-        TextView textView=holder.itemView.findViewById(R.id.textView);
-        TextView textView2=holder.itemView.findViewById(R.id.textView2);
-        TextView textView3=holder.itemView.findViewById(R.id.textView3);
-        ImageView imageView=holder.itemView.findViewById(R.id.imageView);
+        if(forecasts.length==3){
+            if(position>0)return;
+            TextView textView=holder.itemView.findViewById(R.id.textView);
+            TextView textView2=holder.itemView.findViewById(R.id.textView2);
+            TextView textView3=holder.itemView.findViewById(R.id.textView3);
+            ImageView imageView=holder.itemView.findViewById(R.id.imageView);
+            textView.setText(forecasts[0]);
+            textView2.setText(forecasts[1]+"C");
+            textView3.setText("");
+            try {
+                InputStream stream=activity.getAssets().open(forecasts[2]);
+                Drawable drawable=Drawable.createFromStream(stream,null);
+                imageView.setImageDrawable(drawable);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else{
+            if(position>= forecasts.length/4)return;
+            TextView textView=holder.itemView.findViewById(R.id.textView);
+            TextView textView2=holder.itemView.findViewById(R.id.textView2);
+            TextView textView3=holder.itemView.findViewById(R.id.textView3);
+            ImageView imageView=holder.itemView.findViewById(R.id.imageView);
 
-        textView.setText(forecasts[position*4].replace("\"",""));
-        textView2.setText("макс: "+forecasts[position*4+1]+"C");
-        textView3.setText("мин: "+forecasts[position*4+2]+"C");
-        try {
-            InputStream stream=activity.getAssets().open(forecasts[position*4+3]);
-            Drawable drawable=Drawable.createFromStream(stream,null);
-            imageView.setImageDrawable(drawable);
-        } catch (Exception e) {
-            e.printStackTrace();
+            textView.setText(forecasts[position*4].replace("\"",""));
+            textView2.setText("макс: "+forecasts[position*4+1]+"C");
+            textView3.setText("мин: "+forecasts[position*4+2]+"C");
+            try {
+                InputStream stream=activity.getAssets().open(forecasts[position*4+3]);
+                Drawable drawable=Drawable.createFromStream(stream,null);
+                imageView.setImageDrawable(drawable);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Override
     public int getItemCount() {
-        return forecasts.length/4;
+        if(forecasts.length==3)return 1;
+        else return forecasts.length/4;
     }
 
     public void setForecasts(String[] forecasts) {

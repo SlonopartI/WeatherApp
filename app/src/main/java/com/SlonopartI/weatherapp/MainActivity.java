@@ -8,7 +8,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +31,25 @@ public class MainActivity extends AppCompatActivity {
 
         TextView textView=findViewById(R.id.editTextTextPersonName);
         ForecastAdapter forecastAdapter=new ForecastAdapter();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]
+                {"Прогноз", "Текущая"});
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        Spinner spinner=findViewById(R.id.spinner);
+        spinner.setAdapter(adapter);
+        final String[] request = {""};
+        AdapterView.OnItemSelectedListener itemSelectedListener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                request[0] = (String)parent.getItemAtPosition(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                parent.setSelection(0);
+                request[0]=(String) parent.getItemAtPosition(0);
+            }
+        };
+        spinner.setOnItemSelectedListener(itemSelectedListener);
         forecastAdapter.setActivity(this);
         handler=new MyHandler();
         Button button=findViewById(R.id.button);
@@ -34,10 +57,10 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(new ForecastAdapter());
         button.setOnClickListener(v -> {
             if(thread!=null){
-                Toast.makeText(this,"Приложение уже ищет прогноз",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"Приложение в процессе поиска",Toast.LENGTH_SHORT).show();
             }
             else{
-                thread=new ParserThread(12,textView.getText().toString());
+                thread=new ParserThread(request[0].equals("Прогноз")?12:3,textView.getText().toString(), request[0]);
                 thread.start();
             }
         });
@@ -59,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
             outState.putStringArray("forecasts",((ForecastAdapter)recyclerView.getAdapter()).getForecasts());
         }
     }
+
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle inState){
         super.onRestoreInstanceState(inState);
@@ -71,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
         }
     }
+
     public static class MyHandler extends Handler{
         private RecyclerView view;
         private ForecastAdapter adapter;
@@ -83,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 view.setAdapter(adapter);
                 view.setLayoutManager(new LinearLayoutManager(adapter.getActivity()));
                 thread=null;
+                System.err.println("Work");
             }
             else{
                 Toast.makeText(adapter.getActivity(), "Не удалось найти прогноз погоды",Toast.LENGTH_SHORT).show();
